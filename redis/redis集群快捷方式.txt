@@ -1,0 +1,79 @@
+src/redis-server ./cluster-test/7003/redis.conf
+src/redis-server ./cluster-test/7004/redis.conf 
+src/redis-server ./cluster-test/7005/redis.conf 
+
+src/redis-server ./cluster-test/7001/redis.conf
+src/redis-server ./cluster-test/7000/redis.conf 
+src/redis-server ./cluster-test/7002/redis.conf 
+
+
+ps -ef|grep redis
+
+netstat -ntlp|grep redis
+
+
+vim ./cluster-test/7005/redis.conf 
+
+
+redis-trib.rb  create  --replicas  1  10.104.116.139:7000 10.104.116.139:7001  10.104.116.139:7002 10.104.116.139:7003  10.104.116.139:7004  10.104.116.139:7005
+
+src/redis-trib.rb  create  --replicas  1 10.104.116.185:7000 10.104.116.185:7001 10.104.116.139:7003 10.104.116.185:7002 10.104.116.139:7004 10.104.116.139:7005
+
+./src/redis-cli -p 7003 -c -h 10.104.116.139
+
+./src/redis-cli -p 7005 -c -h 10.104.116.139
+
+
+./redis-cli -p 7001 -c -h 10.104.116.185
+
+./src/redis-cli -p 7000 -c -h 10.104.116.185
+
+
+../src/redis-sentinel ./26379/sentinel1.conf --sentinel
+../src/redis-sentinel ./26380/sentinel.conf --sentinel
+../src/redis-sentinel ./26381/sentinel.conf --sentinel
+
+
+ ../src/redis-cli -h 10.104.116.185 -p 26379 info Sentine
+ ../src/redis-cli -h  10.104.116.139 -p 26381 info Sentine
+
+ 
+ ./redis-cli -p 26381
+ 
+ 删除节点
+ 
+./redis-trib del-node 10.104.116.139:7005 10.104.116.185:7000
+
+添加节点
+
+ 
+ ./redis-cli -h 10.104.116.185  -p 7000 DEBUG sleep 300  (s)
+ 
+ ./redis-trib.rb add-node 10.104.116.185:7000 10.104.116.139:7005
+ 
+ ./redis-cli -h 10.104.116.185  -p 7000 DEBUG resume
+ 
+ 
+ sudo ln -s /opt/cachecloud-web/cachecloud-open-web-1.0-SNAPSHOT.war /etc/init.d/cachecloud-web  
+ /etc/init.d/cachecloud-web start 
+ 
+ 
+ 
+ 
+ mvn clean compile install -Ponline
+
+ 
+ sentinel monitor mymaster 10.104.116.185 7001 2
+
+
+sentinel monitor resque 10.104.116.139 7003 2
+sentinel down-after-milliseconds resque 10000
+sentinel failover-timeout resque 180000
+sentinel parallel-syncs resque 5
+
+sentinel monitor resque2 10.104.116.139 7005 2
+sentinel down-after-milliseconds resque2 10000
+sentinel failover-timeout resque2 180000
+sentinel parallel-syncs resque2 5
+ 
+ 
