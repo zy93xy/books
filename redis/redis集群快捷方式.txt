@@ -75,5 +75,17 @@ sentinel monitor resque2 10.104.116.139 7005 2
 sentinel down-after-milliseconds resque2 10000
 sentinel failover-timeout resque2 180000
 sentinel parallel-syncs resque2 5
+
+
+10.104.116.185:7001:521
+10.104.116.185:7000:521
+10.104.116.139:7003:521
+10.104.116.185:7002:521
+10.104.116.139:7005:521
+10.104.116.139:7004:521
+
+
+
+
  
  
